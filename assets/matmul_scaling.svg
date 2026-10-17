@@ -1,0 +1,39 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="640" height="400" font-family="sans-serif">
+<rect width="640" height="400" fill="white"/>
+<text x="320.0" y="24" text-anchor="middle" font-size="15" font-weight="bold">Matmul scaling (blocked + OpenMP)</text>
+<line x1="70" y1="350" x2="610" y2="350" stroke="#333"/>
+<line x1="70" y1="40" x2="70" y2="350" stroke="#333"/>
+<text x="16" y="200.0" transform="rotate(-90 16 200.0)" text-anchor="middle" font-size="12">GFLOP/s</text>
+<text x="320.0" y="390" text-anchor="middle" font-size="12">threads</text>
+<text x="70.0" y="368" text-anchor="middle" font-size="12">1</text>
+<text x="250.0" y="368" text-anchor="middle" font-size="12">2</text>
+<text x="610.0" y="368" text-anchor="middle" font-size="12">4</text>
+<text x="62" y="300.0869565217391" text-anchor="end" font-size="11" fill="#555">5.1</text>
+<line x1="70" y1="296.0869565217391" x2="610" y2="296.0869565217391" stroke="#eee"/>
+<text x="62" y="246.17391304347825" text-anchor="end" font-size="11" fill="#555">10.3</text>
+<line x1="70" y1="242.17391304347825" x2="610" y2="242.17391304347825" stroke="#eee"/>
+<text x="62" y="192.26086956521735" text-anchor="end" font-size="11" fill="#555">15.4</text>
+<line x1="70" y1="188.26086956521735" x2="610" y2="188.26086956521735" stroke="#eee"/>
+<text x="62" y="138.3478260869565" text-anchor="end" font-size="11" fill="#555">20.6</text>
+<line x1="70" y1="134.3478260869565" x2="610" y2="134.3478260869565" stroke="#eee"/>
+<text x="62" y="84.43478260869563" text-anchor="end" font-size="11" fill="#555">25.7</text>
+<line x1="70" y1="80.43478260869563" x2="610" y2="80.43478260869563" stroke="#eee"/>
+<path d="M70.0,216.8 L250.0,80.4 L610.0,82.2" fill="none" stroke="#2563eb" stroke-width="2.5"/>
+<circle cx="70.0" cy="216.8" r="4" fill="#2563eb"/>
+<circle cx="250.0" cy="80.4" r="4" fill="#2563eb"/>
+<circle cx="610.0" cy="82.2" r="4" fill="#2563eb"/>
+<rect x="450" y="306" width="12" height="12" fill="#2563eb"/>
+<text x="466" y="317" font-size="12">blocked+OMP n=512</text>
+<path d="M70.0,224.0 L250.0,96.9 L610.0,98.7" fill="none" stroke="#dc2626" stroke-width="2.5"/>
+<circle cx="70.0" cy="224.0" r="4" fill="#dc2626"/>
+<circle cx="250.0" cy="96.9" r="4" fill="#dc2626"/>
+<circle cx="610.0" cy="98.7" r="4" fill="#dc2626"/>
+<rect x="450" y="326" width="12" height="12" fill="#dc2626"/>
+<text x="466" y="337" font-size="12">blocked+OMP n=1024</text>
+<path d="M70.0,230.4 L250.0,118.0 L610.0,114.9" fill="none" stroke="#059669" stroke-width="2.5"/>
+<circle cx="70.0" cy="230.4" r="4" fill="#059669"/>
+<circle cx="250.0" cy="118.0" r="4" fill="#059669"/>
+<circle cx="610.0" cy="114.9" r="4" fill="#059669"/>
+<rect x="450" y="346" width="12" height="12" fill="#059669"/>
+<text x="466" y="357" font-size="12">blocked+OMP n=2048</text>
+</svg>

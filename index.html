@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Systems projects, measured honestly | Jacob Garcia</title>
+<meta name="description" content="Five small, runnable systems projects (compiler, scheduler, kernels, HPC scaling, RL and inference benchmarking) with measured results and stated limits.">
+<link rel="stylesheet" href="style.css"></head><body>
+<div class="wrap">
+<header class="top"><span>Jacob Garcia</span><nav><a href="#tinyfusion">Compiler</a><a href="#orchd">Orchestration</a><a href="#kernels">Kernels</a><a href="#hpc">HPC</a><a href="#rl">RL + inference</a></nav></header>
+<div class="hero">
+<h1>Five small systems projects, measured and honestly scoped.</h1>
+<p>Each one runs, has tests or checks, compares against a baseline, and says what it does not prove. They are learning-scale, built in one day on 2-core and laptop hardware.</p>
+<p>All code was written with AI assistance (Instinct) under my direction. I describe what each one demonstrates, not production experience I do not have.</p>
+<span class="pill">CPU only, no GPU results</span><span class="pill">Raw data in every repo</span><span class="pill">Limits stated per project</span>
+</div>
+
+<section class="proj" id="tinyfusion"><div class="kicker">ML compilers</div><h2>TinyFusion</h2>
+<p class="lead">A small CPU graph compiler: validates a tensor-expression graph, folds constants, removes dead code, and lowers to either one fused C loop or separate loops, then compiles with GCC. Version 2 adds opt-in common-subexpression elimination.</p>
+<div class="stats"><div class="stat"><b>14.8x</b><span>fused vs unfused, polynomial graph, 1M elements</span></div><div class="stat"><b>0.36x</b><span>fused vs unfused on the ReLU graph at 65k: fusion lost</span></div><div class="stat"><b>11</b><span>unit tests in v1 (v2 tests in repo)</span></div></div>
+<div class="limit"><strong>Limits.</strong> Five operations only (input, const, add, mul, relu). Not MLIR, XLA or TVM. No reductions, matmul, dynamic shapes or GPU. Timings from a shared Xeon VM, no pinning. The ReLU case is kept because it shows fusion is not always faster.</div>
+<p class="ai">Written with AI assistance under Jacob's direction. Shows understanding of fusion tradeoffs, not prior compiler engineering.</p>
+<div class="links"><a href="https://github.com/JacobEGarcia/tinyfusion">Repository</a></div></section>
+
+<section class="proj" id="orchd"><div class="kicker">Cloud orchestration</div><h2>orchd</h2>
+<p class="lead">A single-binary job queue in Go: worker pool, retries with exponential backoff and jitter, dead-letter state, heartbeat health checks that requeue jobs from hung workers, a write-ahead log for crash recovery, and health and readiness endpoints.</p>
+<div class="grid"><div>
+<div class="stats"><div class="stat"><b>754/s</b><span>16 workers, 2000 jobs x 20 ms (N=3, sd 6)</span></div><div class="stat"><b>80.8% to 99.9%</b><span>jobs completed at 20% injected failure, retries off vs on</span></div><div class="stat"><b>0 of 3000</b><span>acknowledged jobs lost after kill -9 and WAL recovery</span></div><div class="stat"><b>99.2% to 100%</b><span>completion with 1% hung workers, health check off vs on</span></div></div>
+<div class="limit"><strong>Limits.</strong> Work is simulated (sleeps plus injected failures) except the CPU-job test, where 16 workers on 2 cores ran slower than 2 workers (14 vs 38 jobs/s) and I have not diagnosed why. Delivery is at-least-once. State lives in one process; no multi-node scheduling, leader election or auth. The Dockerfile and Kubernetes manifest are written but were not built or applied: no container runtime was available. Single-machine numbers, 2 vCPUs.</div></div>
+<figure><img src="assets/orchd_scaling.png" alt="Bar chart of jobs per second at 1, 4, 16 and 64 workers: 48, 192, 758, 2831"><figcaption>Throughput by worker count, 2000 simulated 20 ms jobs.</figcaption></figure></div>
+<p class="ai">Written with AI assistance under Jacob's direction. Shows I can build and load-test a retrying scheduler, not that I run clusters.</p>
+<div class="links"><a href="https://github.com/JacobEGarcia/orchd">Repository</a></div></section>
+
+<section class="proj" id="kernels"><div class="kicker">Kernel programming (CPU)</div><h2>CPU kernel study</h2>
+<p class="lead">fp32 matrix multiply and a 64M-element sum in C: a naive baseline, cache tiling, and AVX2 FMA intrinsics, each checked against the baseline and timed against numpy and OpenBLAS.</p>
+<div class="stats"><div class="stat"><b>27x</b><span>tiled AVX2 vs naive, 1024x1024 matmul</span></div><div class="stat"><b>18.8</b><span>GFLOP/s, my best kernel</span></div><div class="stat"><b>~6x slower</b><span>than OpenBLAS on one thread</span></div></div>
+<div class="limit"><strong>Limits.</strong> CPU only, no CUDA or GPU kernels. One run on a shared 2-vCPU VM; the naive baseline varied between 2.7 and 3.1 s. Tile size 64 was reasoned, not swept. Not a BLAS replacement.</div>
+<p class="ai">Written with AI assistance under Jacob's direction. Demonstrates cache and SIMD reasoning on a CPU.</p>
+<div class="links"><a href="https://github.com/JacobEGarcia/cpu-kernel-study">Repository</a></div></section>
+
+<section class="proj" id="hpc"><div class="kicker">HPC</div><h2>par-bench</h2>
+<p class="lead">OpenMP matrix multiply and a Jacobi stencil in C, with correctness checks against serial references and thread-scaling charts.</p>
+<div class="grid"><div>
+<div class="stats"><div class="stat"><b>~45x</b><span>blocked + OpenMP vs naive, n=1024 (24.2 vs 0.54 GFLOP/s)</span></div><div class="stat"><b>~2.0x</b><span>matmul, 1 to 2 threads</span></div><div class="stat"><b>0</b><span>bitwise mismatches, parallel vs serial stencil</span></div></div>
+<div class="limit"><strong>Limits.</strong> Two vCPUs on a shared host, single node, no MPI or GPU. The 4-thread point is oversubscription, shown on purpose. The stencil's 2.7x at two threads exceeds the ideal 2.0x because of host noise; I do not claim superlinear scaling.</div></div>
+<figure><img src="assets/matmul_scaling.svg" alt="Matmul GFLOP/s by thread count"><figcaption>Blocked matmul scaling. Plateau after 2 threads is expected on 2 vCPUs.</figcaption></figure></div>
+<p class="ai">Written with AI assistance under Jacob's direction.</p>
+<div class="links"><a href="https://github.com/JacobEGarcia/par-bench">Repository</a></div></section>
+
+<section class="proj" id="rl"><div class="kicker">RL systems and inference runtime</div><h2>RL training and inference benchmarking</h2>
+<p class="lead">Two small harnesses. A tabular Q-learning trainer on a toy grid with logged runs across 8 seeds, and a streaming Ollama client that measures time to first text and tokens per second at concurrency 1, 2 and 4.</p>
+<div class="stats"><div class="stat"><b>94.7%</b><span>held-out goal success vs 1.7% random (8 seeds)</span></div><div class="stat"><b>~16 tok/s</b><span>gpt-oss:20b, CPU only, flat across 1, 2, 4 streams</span></div><div class="stat"><b>0 GPU</b><span>the inference run used CPU only, no offload</span></div></div>
+<div class="limit"><strong>Limits.</strong> The RL task is a fixed 5x5 map, not a neural or distributed system. In the inference run all 24 streams hit the 128-token cap, only half of each group produced answer text, and tokens may include reasoning. No quality test, no GPU run, no production serving. The flat throughput fits a saturated or serialized CPU backend; it is not a hardware diagnosis.</div>
+<p class="ai">Written with AI assistance under Jacob's direction. The inference run was made on a separate laptop and its raw logs are in the repo.</p>
+<div class="links"><a href="https://github.com/JacobEGarcia/rl-and-inference-evidence">Repository</a></div></section>
+
+<footer>Numbers on this page are copied from the results files in each repository. Re-run them yourself; expect different absolute numbers on different hardware.</footer>
+</div></body></html>
